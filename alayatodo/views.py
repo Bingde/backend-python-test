@@ -1,13 +1,13 @@
 from alayatodo import app
 from flask import (
+	Flask,
+    flash,
     g,
     redirect,
     render_template,
     request,
     url_for,
     session,
-    jsonify,
-    json,
     )
 @app.route("/auto")
 def auto():
@@ -37,8 +37,8 @@ def login_POST():
     if user:
         session['user'] = dict(user)
         session['logged_in'] = True
+        flash('You were successfully logged in')	
         return redirect('/todo')
-
     return redirect('/login')
 
 
@@ -46,6 +46,7 @@ def login_POST():
 def logout():
     session.pop('logged_in', None)
     session.pop('user', None)
+    flash('You were successfully logged out')
     return redirect('/')
 
 
@@ -92,6 +93,7 @@ def todos_POST():
         % (session['user']['id'], request.form.get('description', ''))
     )
     g.db.commit()
+    flash('You were successfully add one todo list')
     return redirect('/todo')
 
 
@@ -101,4 +103,5 @@ def todo_delete(id):
         return redirect('/login')
     g.db.execute("DELETE FROM todos WHERE id ='%s'" % id)
     g.db.commit()
+    flash('You were successfully delete one todo list')
     return redirect('/todo')

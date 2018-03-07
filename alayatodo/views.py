@@ -5,9 +5,14 @@ from flask import (
     render_template,
     request,
     url_for,
-    session
+    session,
+    jsonify,
+    json,
     )
-
+@app.route("/auto")
+def auto():
+   # auto response json or xml by Accept request header
+   return auto_response({"message": "Hello World!"}, status_code=201, headers={'x-foo': 'bar'})
 
 @app.route('/')
 def home():
@@ -49,6 +54,16 @@ def todo(id):
     cur = g.db.execute("SELECT * FROM todos WHERE id ='%s'" % id)
     todo = cur.fetchone()
     return render_template('todo.html', todo=todo)
+    
+# allow to view in JSON format
+@app.route('/todo/<id>/json', methods=['GET'])
+def todojson(id):
+    cur = g.db.execute("SELECT * FROM todos WHERE id ='%s'" % id)
+    todo = cur.fetchone()
+    return render_template('json.html',todo=todo)
+# 	dump(todo)
+#     return jsonify(user_id=todos.user_id) 
+
 
 
 @app.route('/todo', methods=['GET'])

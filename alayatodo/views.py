@@ -4,6 +4,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    url_for,
     session
     )
 
@@ -55,7 +56,9 @@ def todo(id):
 def todos():
     if not session.get('logged_in'):
         return redirect('/login')
-    cur = g.db.execute("SELECT * FROM todos")
+#     cur = g.db.execute("SELECT * FROM todos ")
+#     modify the user permission to allow only himself to view its todos
+    cur = g.db.execute("SELECT * FROM todos WHERE user_id ='%s'" % session['user']['id'] )
     todos = cur.fetchall()
     return render_template('todos.html', todos=todos)
 
@@ -65,7 +68,7 @@ def todos():
 def todos_POST():
     if not session.get('logged_in'):
         return redirect('/login')
-    g.db.execute(
+    	g.db.execute(
         "INSERT INTO todos (user_id, description) VALUES ('%s', '%s')"
         % (session['user']['id'], request.form.get('description', ''))
     )

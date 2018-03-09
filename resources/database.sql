@@ -10,5 +10,11 @@ CREATE TABLE todos (
   id INTEGER PRIMARY KEY,
   user_id INT(11) NOT NULL,
   description VARCHAR(255),
+  completed INT(2) NOT NULL DEFAULT(0),
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
+-- ALTER TABLE todos ADD completed INT NOT NULL DEFAULT(0);
+/*
+ALTER TABLE todos 
+ADD completed INT NOT NULL DEFAULT(1);
+*/

@@ -1,0 +1,2 @@
+ALTER TABLE todos 
+DROP completed INT NOT NULL DEFAULT(1);

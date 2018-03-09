@@ -1,4 +1,5 @@
 from alayatodo import app
+
 from flask import (
 	Flask,
     flash,
@@ -9,6 +10,7 @@ from flask import (
     url_for,
     session,
     )
+
 @app.route("/auto")
 def auto():
    # auto response json or xml by Accept request header
@@ -89,8 +91,8 @@ def todos_POST():
     	redirect('/todo')
     else:
     	g.db.execute(
-        "INSERT INTO todos (user_id, description) VALUES ('%s', '%s')"
-        % (session['user']['id'], request.form.get('description', ''))
+        "INSERT INTO todos (user_id, description,completed) VALUES ('%s', '%s','%s')"
+        % (session['user']['id'], request.form.get('description'), 0)
     )
     g.db.commit()
     flash('You were successfully add one todo list')

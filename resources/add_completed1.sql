@@ -1,2 +1,0 @@
-ALTER TABLE todos 
-DROP completed1 INT NOT NULL DEFAULT(1);

@@ -1,5 +1,7 @@
 from alayatodo import app
+from flask import Blueprint
 
+from flask_paginate import Pagination, get_page_parameter, get_page_args
 from flask import (
 	Flask,
     flash,
@@ -10,11 +12,14 @@ from flask import (
     url_for,
     session,
     )
+from alayatodo import models
+from alayatodo.models import Todo
+from alayatodo.models import User
 
 @app.route("/auto")
-def auto():
-   # auto response json or xml by Accept request header
-   return auto_response({"message": "Hello World!"}, status_code=201, headers={'x-foo': 'bar'})
+def logincheck():
+  		if not session.get('logged_in'):
+  			return redirect('/login')
 
 @app.route('/')
 def home():
@@ -32,17 +37,18 @@ def login():
 def login_POST():
     username = request.form.get('username')
     password = request.form.get('password')
-
+#     user = User.query(User).filter_by(username == '%s' %username ).filter_by(password == '%s' %password ).first()
+#     print(user)
     sql = "SELECT * FROM users WHERE username = '%s' AND password = '%s'";
     cur = g.db.execute(sql % (username, password))
     user = cur.fetchone()
+    print(dict(user))
     if user:
         session['user'] = dict(user)
         session['logged_in'] = True
         flash('You were successfully logged in')	
         return redirect('/todo')
     return redirect('/login')
-
 
 @app.route('/logout')
 def logout():
@@ -63,47 +69,80 @@ def todo(id):
 def todojson(id):
     cur = g.db.execute("SELECT * FROM todos WHERE id ='%s'" % id)
     todo = cur.fetchone()
+#     todo = Todo.query.all()
+# 	  todo=Todo.query.filter_by(id='%s' % id)
     return render_template('json.html',todo=todo)
-# 	dump(todo)
-#     return jsonify(user_id=todos.user_id) 
 
-
-
-@app.route('/todo', methods=['GET'])
-@app.route('/todo/', methods=['GET'])
-def todos():
-    if not session.get('logged_in'):
-        return redirect('/login')
-#     cur = g.db.execute("SELECT * FROM todos ")
-#     modify the user permission to allow only himself to view its todos
-    cur = g.db.execute("SELECT * FROM todos WHERE user_id ='%s'" % session['user']['id'] )
-    todos = cur.fetchall()
-    return render_template('todos.html', todos=todos)
-
+@app.route('/todo',defaults={'page': 1} ,methods=['GET'])
+@app.route('/todo/',defaults={'page': 1},methods=['GET'])
+@app.route('/todo/page/<int:page>/',methods=['GET'])
+@app.route('/todo/page/<int:page>',methods=['GET'])
+def todos(page):
+	
+	total = Todo.query.count()
+	page, per_page, offset = get_page_args(page_parameter='page',per_page_parameter='per_page')
+	todos = Todo.query.filter_by(user_id='%s' % session['user']['id']).slice(offset, per_page).limit(per_page)
+	pagination = Pagination(page=page,
+                                per_page=per_page,
+                                total=total,
+                                record_name='todos',
+                                format_total=True,
+                                format_number=True,
+                                )
+	return render_template('todos.html', todos=todos,
+                           page=page,
+                           per_page=per_page,
+                           pagination=pagination
+                           )
 
 @app.route('/todo', methods=['POST'])
 @app.route('/todo/', methods=['POST'])
 def todos_POST():
     if not session.get('logged_in'):
         return redirect('/login')
+        
 #    if form description is empty, then not insert into DB
     elif request.form.get('description') == "":
+    	flash('You can not add todo list without description')
     	redirect('/todo')
     else:
+    	flash('You were successfully add one todo list')
     	g.db.execute(
         "INSERT INTO todos (user_id, description,completed) VALUES ('%s', '%s','%s')"
         % (session['user']['id'], request.form.get('description'), 0)
     )
     g.db.commit()
-    flash('You were successfully add one todo list')
+    
+    return redirect('/todo')
+
+@app.route('/todo/complete/<id>', methods=['POST'])
+
+def todo_completed(id):
+    logincheck()
+    g.db.execute("UPDATE todos SET completed = 1 WHERE id ='%s'" % id)
+    g.db.commit()
+    print("deleted '%s'" % id)
+    flash('You were successfully completed one todo list')
+    return redirect('/todo')
+    
+@app.route('/todo/not_complete/<id>', methods=['POST'])
+   
+def todo_not_completed(id):
+    logincheck()
+    g.db.execute("UPDATE todos SET completed = 0 WHERE id ='%s'" % id)
+    g.db.commit()
+    print("deleted '%s'" % id)
+    flash('You have put one todo list into incomplete')
     return redirect('/todo')
 
 
 @app.route('/todo/<id>', methods=['POST'])
+
 def todo_delete(id):
-    if not session.get('logged_in'):
-        return redirect('/login')
+    logincheck()
     g.db.execute("DELETE FROM todos WHERE id ='%s'" % id)
     g.db.commit()
+    
     flash('You were successfully delete one todo list')
     return redirect('/todo')
+

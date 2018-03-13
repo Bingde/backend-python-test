@@ -1,39 +1,54 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="col-md-4 col-md-offset-4">
+<div class="col-md-12 col-md-offset-0 ">
     <h1>Todo List:</h1>
-    <table class="table table-striped">
-        <th>#</th><th>User</th><th>Description</th><th>Status</th><th></th>
+    <div id="test-list">
+	    {{ pagination.info }}
+		{{ pagination.links }}
+    <table class="table table-striped " >
+        <th>#</th><th>User</th><th>Description</th><th>Status</th><th colspan="3" class="text-center">Action</th>
         {% for todo in todos %}
-            <tr>
-                <td>{{ todo.id }}</td>
-                <td>{{ todo.user_id }}</td>
-                <td>
-                    <a href="{{ url_for('todo', id=todo.id) }}">
+        <ul class="list">
+	            <tr> 
+                <td class="name">{{ todo.id }}</td>
+	            <td class="name">{{ todo.user_id }}</td>
+	            <td class="name">
+                 <a href="{{ url_for('todo', id=todo.id) }}">
                        {{ todo.description }}
                     </a>
                 </td>
-                  <td>
+                <td class="completed-{{todo.completed}} name">
 	                    {% if todo.completed == 0 %}
 	                     not completed
 	                    {% else:    %}
 	                     Completed
 	                     {% endif %}
 	                  
-                  </td>
+                </td>
+                 <td>
+                    <form method="post" action="{{ url_for('todo_completed', id=todo.id) }}">
+                        <button type="submit" class="btn btn-xs btn-success"><span class="glyphicon glyphicon-ok glyphicon-white"></span></button>
+                    </form>
+                </td>
+                  <td>
+                    <form method="post" action="{{ url_for('todo_not_completed', id=todo.id) }}">
+                        <button type="submit" class="btn btn-xs btn-warning"><span class="glyphicon glyphicon-minus glyphicon-white"></span></button>
+                    </form>
+                </td>
 
                 <td>
                     <form method="post" action="{{ url_for('todo_delete', id=todo.id) }}">
                         <button type="submit" class="btn btn-xs btn-danger"><span class="glyphicon glyphicon-remove glyphicon-white"></span></button>
                     </form>
                 </td>
-            </tr>
+              
+            </tr></ul>
         {% endfor %}
         <tr>
             <form method="post" action="{{ url_for('todos_POST') }}">
                 <td colspan="3">
-                    <input type="textbox" name="description" class="small-6 small-center" placeholder="Description...">
+                    <input type="textarea" name="description" class="small-6 small-center" placeholder="Description...">
                 </td>
                 <td>
                     <button type="submit" class="btn btn-sm btn-primary">Add</button>
@@ -41,5 +56,31 @@
             </form>
         </tr>
     </table>
+ 
+
+    {{ pagination.links }}
+    </div>
+</div>
+<!-- test here -->
+<div id="app">
+  {{ message }}
+</div>
+<!--
+	{{message}}
+  <h1>Vue-Paginate v3.4 {{ nice }}</h1>
+  {{nice}}
+  <paginate  name="items" :list="items" class="paginate-list">
+    <li v-for="item in paginated('items')">
+      {{ item }}
+    </li>
+  </paginate>
+  <paginate-links  for="items" :show-step-links="true"></paginate-links>
+  <paginate-links for="items" :limit="2" :show-step-links="true"></paginate-links>
+  <paginate-links  for="items" :simple="{
+        next: 'Next »',
+        prev: '« Back'
+      }"></paginate-links>
+-->
+{{active_url}}
 </div>
 {% endblock %}

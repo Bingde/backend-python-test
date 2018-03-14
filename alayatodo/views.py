@@ -109,8 +109,7 @@ def todos_POST():
         "INSERT INTO todos (user_id, description,completed) VALUES ('%s', '%s','%s')"
         % (session['user']['id'], request.form.get('description'), 0)
     )
-#     g.db.commit()
-    
+    g.db.commit()
     return redirect('/todo')
 
 @app.route('/todo/complete/<id>', methods=['POST'])

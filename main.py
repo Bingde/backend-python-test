@@ -27,14 +27,13 @@ db_session = scoped_session(sessionmaker(autocommit=False,
 
 # associate it with our custom Session class
 Session.configure(bind=engine)
-
 # work with the session
 session = Session()
 
 # end of seeeion
 db = SQLAlchemy(app)
-Base = declarative_base()
 
+Base = declarative_base()
 Base.query = db_session.query_property()
 
 from alayatodo import app

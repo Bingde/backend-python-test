@@ -60,15 +60,15 @@ def logout():
 
 @app.route('/todo/<id>', methods=['GET'])
 def todo(id):
-		todo=Todo.query.filter_by(id='%s' % id)
+		todo=Todo.query.filter_by(id='%s' % id).first()
+		print(todo)
 		return render_template('todo.html', todo=todo)
     
 # allow to view in JSON format
 @app.route('/todo/<id>/json', methods=['GET'])
 def todojson(id):
 # 	change to ORM way
-		todo=Todo.query.filter_by(id='%s' % id)
-		print(id)
+		todo=Todo.query.filter_by(id='%s' % id).first()
 		return render_template('json.html',todo=todo)
 
 @app.route('/todo',defaults={'page': 1} ,methods=['GET'])

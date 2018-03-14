@@ -37,7 +37,7 @@ def login():
 def login_POST():
     username = request.form.get('username')
     password = request.form.get('password')
-#     user = User.query(User).filter_by(username == '%s' %username ).filter_by(password == '%s' %password ).first()
+#     user = session.query(users).filter_by(username == '%s' %username ).filter_by(password == '%s' %password ).one()
 #     print(user)
     sql = "SELECT * FROM users WHERE username = '%s' AND password = '%s'";
     cur = g.db.execute(sql % (username, password))
@@ -60,18 +60,16 @@ def logout():
 
 @app.route('/todo/<id>', methods=['GET'])
 def todo(id):
-    cur = g.db.execute("SELECT * FROM todos WHERE id ='%s'" % id)
-    todo = cur.fetchone()
-    return render_template('todo.html', todo=todo)
+		todo=Todo.query.filter_by(id='%s' % id)
+		return render_template('todo.html', todo=todo)
     
 # allow to view in JSON format
 @app.route('/todo/<id>/json', methods=['GET'])
 def todojson(id):
-    cur = g.db.execute("SELECT * FROM todos WHERE id ='%s'" % id)
-    todo = cur.fetchone()
-#     todo = Todo.query.all()
-# 	  todo=Todo.query.filter_by(id='%s' % id)
-    return render_template('json.html',todo=todo)
+# 	change to ORM way
+		todo=Todo.query.filter_by(id='%s' % id)
+		print(id)
+		return render_template('json.html',todo=todo)
 
 @app.route('/todo',defaults={'page': 1} ,methods=['GET'])
 @app.route('/todo/',defaults={'page': 1},methods=['GET'])
@@ -111,7 +109,7 @@ def todos_POST():
         "INSERT INTO todos (user_id, description,completed) VALUES ('%s', '%s','%s')"
         % (session['user']['id'], request.form.get('description'), 0)
     )
-    g.db.commit()
+#     g.db.commit()
     
     return redirect('/todo')
 
@@ -119,9 +117,9 @@ def todos_POST():
 
 def todo_completed(id):
     logincheck()
-    g.db.execute("UPDATE todos SET completed = 1 WHERE id ='%s'" % id)
-    g.db.commit()
-    print("deleted '%s'" % id)
+#     g.db.execute("UPDATE todos SET completed = 1 WHERE id ='%s'" % id)
+#     g.db.commit()
+    to_complete=Todo.query.filter_by(id='%s' % id).update({Todo.completed:1},synchronize_session=False)
     flash('You were successfully completed one todo list')
     return redirect('/todo')
     
@@ -129,9 +127,7 @@ def todo_completed(id):
    
 def todo_not_completed(id):
     logincheck()
-    g.db.execute("UPDATE todos SET completed = 0 WHERE id ='%s'" % id)
-    g.db.commit()
-    print("deleted '%s'" % id)
+    not_complete=Todo.query.filter_by(id='%s' % id).update({Todo.completed:0},synchronize_session=False)
     flash('You have put one todo list into incomplete')
     return redirect('/todo')
 
@@ -140,9 +136,7 @@ def todo_not_completed(id):
 
 def todo_delete(id):
     logincheck()
-    g.db.execute("DELETE FROM todos WHERE id ='%s'" % id)
-    g.db.commit()
-    
+    to_delete=Todo.query.filter_by(id='%s' % id).delete()
     flash('You were successfully delete one todo list')
     return redirect('/todo')
 

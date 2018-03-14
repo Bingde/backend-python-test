@@ -14,12 +14,24 @@ from docopt import docopt
 import subprocess
 import os
 
+# add session
+# configure Session class with desired options
+Session = sessionmaker()
+
+
 app = Flask(__name__)
 engine = create_engine('sqlite:////tmp/alayatodo.db', convert_unicode=True)
 db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
                                          bind=engine))
 
+# associate it with our custom Session class
+Session.configure(bind=engine)
+
+# work with the session
+session = Session()
+
+# end of seeeion
 db = SQLAlchemy(app)
 Base = declarative_base()
 
